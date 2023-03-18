@@ -15,11 +15,14 @@ import yimer.enginneindustries.bluetv.custom.CardPresenter
 import yimer.enginneindustries.bluetv.domain.Movie
 import yimer.enginneindustries.bluetv.data.MoviesRepository
 import yimer.enginneindustries.bluetv.detail.DetailActivity
+import yimer.enginneindustries.bluetv.domain.Channels
+
 
 
 class MainFragment: BrowseSupportFragment() {
 
     private lateinit var moviesRepository: MoviesRepository
+
     private val backgroundState = BackgroundState(this)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -27,6 +30,7 @@ class MainFragment: BrowseSupportFragment() {
 
         title = getString(R.string.browse)
         moviesRepository = MoviesRepository(getString(R.string.api_key))
+
         viewLifecycleOwner.lifecycleScope.launch {
             adapter = buildAdapterChannels()
             mainFragmentRegistry.registerFragment(PageRow::class.java, PageRowFragmentFactory())
@@ -34,44 +38,30 @@ class MainFragment: BrowseSupportFragment() {
 
         }
 
-        onItemViewClickedListener = OnItemViewClickedListener { vh, movie, _, _ ->
+        onItemViewClickedListener = OnItemViewClickedListener { vh, channels, _, _ ->
             val bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
                 requireActivity(),
                 (vh.view as ImageCardView).mainImageView,
-                DetailActivity.SHARED_ELEMENT_NAME
+                DetailActivity.SHARED_ELEMENT_CHANNEL_NAME
 
             ).toBundle()
             val intent = Intent(requireContext(), DetailActivity::class.java).apply {
-                putExtra(DetailActivity.MOVIE_EXTRA, movie as Movie)
+                putExtra(DetailActivity.CHANNEL_EXTRA, channels as Channels)
             }
             startActivity(intent, bundle)
         }
 
-        onItemViewSelectedListener = OnItemViewSelectedListener { _, movie, _, _ ->
-            (movie as? Movie)?.let { backgroundState.loadUrl(it.backdrop) }
+        onItemViewSelectedListener = OnItemViewSelectedListener { _, channels, _, _ ->
+            (channels as? Channels)?.let { backgroundState.loadUrl(it.urlImage) }
         }
+
+
     }
 
 
 
 
-     private suspend fun buildAdapter():ArrayObjectAdapter {
 
-            val rowsAdapter = ArrayObjectAdapter(ListRowPresenter())
-            val cardPresenter = CardPresenter()
-           moviesRepository.getCategories().forEach { (category,movies) ->
-               val listRowsAdapter = ArrayObjectAdapter(cardPresenter)
-               listRowsAdapter.addAll(0, movies)
-
-               val header = HeaderItem(category.ordinal.toLong(),   category.name)
-               rowsAdapter.add(ListRow(header, listRowsAdapter))
-
-           }
-
-
-         return rowsAdapter
-
-     }
 
         private suspend fun buildAdapterChannels():ArrayObjectAdapter {
 

@@ -8,8 +8,10 @@ import android.view.View
 
 import androidx.leanback.app.DetailsSupportFragment
 import androidx.leanback.widget.*
+import yimer.enginneindustries.bluetv.domain.Channels
 
 import yimer.enginneindustries.bluetv.domain.Movie
+
 import yimer.enginneindustries.bluetv.iu.common.loadImageUrl
 
 
@@ -21,22 +23,29 @@ class DetailFragment: DetailsSupportFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val movie = requireActivity().intent.getParcelableExtra<Movie>(DetailActivity.MOVIE_EXTRA)
-            ?: throw IllegalStateException("Movie no  encontrada")
 
-        val presenter = FullWidthDetailsTvRowPresenter(requireActivity())
-
-        val rowsAdapter = ArrayObjectAdapter(presenter)
-        val detailsOverviewRow = DetailsOverviewRow(movie)
-        detailsOverviewRow.loadImageUrl(requireContext(), movie.poster)
-        detailsOverviewRow.actionsAdapter = presenter.buildActions(presenter)
+        val channel = requireActivity().intent.getParcelableExtra<Channels>(DetailActivity.CHANNEL_EXTRA)
+            ?: throw IllegalStateException("Canal no disponible")
 
 
-        rowsAdapter.add(detailsOverviewRow)
+        val presenterChannels = FullWidthDetailsChannelsRowPresenter(requireActivity(),requireContext(), channel)
 
-        adapter = rowsAdapter
 
-        detailsBackgroundState.loadUrl(movie.backdrop)
+        val rowsAdapterChannels = ArrayObjectAdapter(presenterChannels)
+
+        val detailsOverviewRowChannels = DetailsOverviewRow(channel)
+
+        detailsOverviewRowChannels.loadImageUrl(requireContext(), channel.urlImage)
+
+        detailsOverviewRowChannels.actionsAdapter = presenterChannels.buildActionsChannels(presenterChannels)
+
+
+
+        rowsAdapterChannels.add(detailsOverviewRowChannels)
+
+        adapter = rowsAdapterChannels
+        detailsBackgroundState.loadUrl(channel.urlImage)
+
 
 
 
